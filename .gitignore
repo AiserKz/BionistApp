@@ -1,4 +1,8 @@
-node_modules
-node_modules/*
-dist/*
-.psd
+node_modules/
+.vscode/
+.env
+*.log
+__pycache__/
+*.pyc
+dist/
+build/
