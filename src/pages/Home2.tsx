@@ -4,7 +4,7 @@ import type { PlateData } from "../types/types";
 import PlateChart from "../components/PlateChart";
 import Loader from "../components/Loader";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, User2Icon } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useTitle } from "../hooks/useTitle";
 
 export function Home2() {
@@ -131,44 +131,10 @@ export function Home2() {
   };
 
   return (
-    <div className="min-h-screen w-full text-gray-300 flex justify-center p-4 overflow-hidden relative font-sans bg-zinc-900">
-      {/* фон */}
-      <div
-        className="absolute inset-0 bg-[radial-gradient(#3f3f46_1px,transparent_1px)] 
-      bg-size-[24px_24px] 
-      mask-[radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)]"
-      ></div>
-
+    <div className="">
       <div className="animate-pulse absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vw] max-w-3xl h-[60vh] bg-linear-to-br from-green-500/30 via-yellow-500/5 to-orange-500/10 rounded-full filter blur-[120px] opacity-40"></div>
 
       <main className="w-full max-w-5xl mx-auto z-10 p-4 sm:p-6 md:p-8">
-        <header className="flex justify-between items-center my-12">
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-            className="flex items-center gap-3 cursor-pointer"
-          >
-            <div className="w-11 h-10 ">
-              <img
-                src="/favicon3.png"
-                className="select-none"
-                draggable="false"
-              />
-            </div>
-            <span className="font-bold text-xl text-gray-200">Баланист</span>
-          </motion.div>
-          <motion.button
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-            className="w-10 h-10 rounded-full hover:ring-2 hover:ring-amber-400 bg-amber-400/20 flex items-center justify-center 
-            hover:bg-amber-400/30 transition-all border border-amber-400/30 duration-300"
-          >
-            <User2Icon />
-          </motion.button>
-        </header>
-
         <div className="flex flex-col items-center justify-center min-h-[60vh]">
           <AnimatePresence mode="wait">{renderContent()}</AnimatePresence>
         </div>
