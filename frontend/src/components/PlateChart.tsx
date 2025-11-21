@@ -8,7 +8,7 @@ import {
   Tooltip,
   type PieLabelRenderProps,
 } from "recharts";
-import type { PlateData, PlateDataTestType } from "../types/types";
+import type { PlateData } from "../types/types";
 
 import { motion, type Variants } from "framer-motion";
 import { useIsMobile } from "../hooks/useIsMobile";

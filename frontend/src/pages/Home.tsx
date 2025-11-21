@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
-import { generateFood, generateHealthyPlate } from "../service/appSerivce";
-import type { PlateData, PlateDataTestType } from "../types/types";
+import { generateFood } from "../service/appSerivce";
+import type { PlateData } from "../types/types";
 import PlateChart from "../components/PlateChart";
 import Loader from "../components/Loader";
 import { motion, AnimatePresence } from "framer-motion";

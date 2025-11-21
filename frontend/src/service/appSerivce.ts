@@ -1,4 +1,4 @@
-import type { PlateData, PlateDataTestType } from "../types/types";
+import type { PlateData } from "../types/types";
 import axios from "axios";
 
 export const BASE_URL = "http://localhost:5000";
@@ -34,8 +34,8 @@ export const generateHealthyPlate = async (
       { name: "Цельнозерновые", items: ["Отварная киноа"], value: 25 },
       { name: "Белок", items: ["Запеченная куриная грудка"], value: 25 },
     ],
-
-    imageUrl:
+    image_id: "photo-1546069901-ba9599a7e63c",
+    image_url:
       "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=1780&auto=format&fit=crop",
     recommendation:
       "Этот прием пищи богат клетчаткой и белком, что способствует долгому чувству сытости. Соотношение нутриентов идеально для поддержания энергии в течение дня.",
