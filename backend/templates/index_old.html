@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Генерация картинок</title>
+</head>
+<body>
+    <h1>Генерация изображений</h1>
+    <form action="/" method="post">
+        <label for="description">Описание:</label><br/>
+        <input type="text" name="description" value="{{ description }}"/><br/>
+        <button type="submit">Создать изображение</button>
+    </form>
+    {% if last_image %}
+        <p>Последнее изображение:</p>
+        <img src="{{ url_for('static', filename='images/' + last_image) }}" alt="Generated Image"/>
+    {% endif %}
+</body>
+</html>

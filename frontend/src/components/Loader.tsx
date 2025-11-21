@@ -15,7 +15,7 @@ const Loader: React.FC = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setIndex((prevIndex) => (prevIndex + 1) % loadingTexts.length);
-    }, 2000); // задержка
+    }, 5000); // задержка
 
     return () => clearInterval(interval);
   }, []);

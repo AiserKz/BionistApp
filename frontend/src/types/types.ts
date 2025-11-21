@@ -9,7 +9,14 @@ export interface PlateData {
   summary: string;
   totalCalories: number;
   plate: PlateSection[];
-  imageUrl: string;
+  image_id: string;
+  image_url: string;
   recommendation: string;
   ingredients: string[];
+}
+
+export interface PlateDataTestType {
+  filename: string;
+  image_url: string;
+  prompt_used: string;
 }

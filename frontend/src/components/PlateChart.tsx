@@ -8,11 +8,12 @@ import {
   Tooltip,
   type PieLabelRenderProps,
 } from "recharts";
-import type { PlateData } from "../types/types";
+import type { PlateData, PlateDataTestType } from "../types/types";
 
 import { motion, type Variants } from "framer-motion";
 import { useIsMobile } from "../hooks/useIsMobile";
 import TiltedCard from "./TiltedCard";
+import { BASE_URL } from "../service/appSerivce";
 
 interface PlateChartProps {
   data: PlateData;
@@ -20,10 +21,10 @@ interface PlateChartProps {
 }
 
 const COLORS: { [key: string]: string } = {
-  Овощи: "#22c55e", // green-500
-  Фрукты: "#ef4444", // red-500
-  Цельнозерновые: "#f97316", // orange-500
-  Белок: "#3b82f6", // blue-500
+  "Зерновые и картофель": "#22c55e", // green-500
+  "Овощи и фрукты": "#ef4444", // red-500
+  "Злаки и крупы": "#f97316", // orange-500
+  "Белковые продукты": "#3b82f6", // blue-500
 };
 const RADIAN = Math.PI / 180;
 
@@ -140,7 +141,7 @@ const PlateChart: React.FC<PlateChartProps> = ({ data, onReset }) => {
         >
           {isMobile ? (
             <img
-              src={data.imageUrl}
+              src={BASE_URL + data.image_url}
               alt="Сгенерированная тарелка здорового питания"
               className="rounded-2xl shadow-lg w-full h-auto object-cover aspect-square border-4 border-white/10"
             />
@@ -150,7 +151,7 @@ const PlateChart: React.FC<PlateChartProps> = ({ data, onReset }) => {
               rotateAmplitude={12}
               scaleOnHover={1.1}
               showMobileWarning={true}
-              imageSrc={data.imageUrl}
+              imageSrc={BASE_URL + data.image_url}
               displayOverlayContent={true}
               showTooltip={false}
             />
@@ -178,7 +179,7 @@ const PlateChart: React.FC<PlateChartProps> = ({ data, onReset }) => {
                     stroke="none"
                   >
                     {chartData.map((entry, index) => (
-                      <Cell key={index} fill={COLORS[entry.name] || "#ccc"} />
+                      <Cell key={index} fill={COLORS[entry.name] || "#888"} />
                     ))}
                   </Pie>
                   <Tooltip content={<CustomTooltip />} />

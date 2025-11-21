@@ -1,4 +1,7 @@
-import type { PlateData } from "../types/types";
+import type { PlateData, PlateDataTestType } from "../types/types";
+import axios from "axios";
+
+export const BASE_URL = "http://localhost:5000";
 
 //  НАЧАЛО: Логика с моковыми данными
 
@@ -50,6 +53,20 @@ export const generateHealthyPlate = async (
   // throw new Error("ошибка сети.");
 
   return mockData;
+};
+
+export const generateFood = async (user_text: string) => {
+  const res = await axios.post(
+    `${BASE_URL}/food/generate`,
+    { user_text },
+    {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+  console.log(res.data);
+  return res?.data as PlateData;
 };
 
 // КОНЕЦ моковых логик ---

@@ -1,0 +1,27 @@
+from flask import Blueprint
+from flask import request, jsonify, url_for
+from app.service.gigachat_service import GigaChatService
+from app.core.config import GIGACHAT_CREDENTIALS
+from app.service.promt_builder import build_harvard_prompt
+import os
+
+app_food = Blueprint("food", __name__, url_prefix="/food")
+IMAGES_DIR = os.path.join("static", "images")
+giga_service = GigaChatService(GIGACHAT_CREDENTIALS, IMAGES_DIR)
+
+
+@app_food.route("/generate", methods=["POST"])
+def food_generate():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Пустое запрос"}), 400
+
+    user_note = data.get("user_text", "").strip()
+
+    prompt = build_harvard_prompt(user_note)
+    try:
+        result = giga_service.generate(prompt, flask_url_for=url_for)
+        return jsonify(result), 200
+    except Exception as e:
+        print("Ошибка при генераций: ", e)
+        return jsonify({"error": "Ошибка генерации", "details": str(e)}), 500

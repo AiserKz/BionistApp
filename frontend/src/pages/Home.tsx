@@ -1,13 +1,13 @@
 import { useState, useCallback } from "react";
-import { generateHealthyPlate } from "../service/appSerivce";
-import type { PlateData } from "../types/types";
+import { generateFood, generateHealthyPlate } from "../service/appSerivce";
+import type { PlateData, PlateDataTestType } from "../types/types";
 import PlateChart from "../components/PlateChart";
 import Loader from "../components/Loader";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { useTitle } from "../hooks/useTitle";
 
-export function Home2() {
+export function Home() {
   useTitle("Баланист");
   const [userInput, setUserInput] = useState<string>("");
   const [plateData, setPlateData] = useState<PlateData | null>(null);
@@ -26,7 +26,8 @@ export function Home2() {
     setError(null);
     setPlateData(null);
     try {
-      const data = await generateHealthyPlate(userInput);
+      const data = await generateFood(userInput);
+      console.log(data);
       setPlateData(data);
     } catch (err) {
       setError(
@@ -55,12 +56,12 @@ export function Home2() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
-          className="text-center text-red-400"
+          className="text-center text-red-400 z-10"
         >
           <p>{error}</p>
           <button
             onClick={handleReset}
-            className="mt-4 text-lime-400 underline"
+            className="mt-4 text-lime-400 underline cursor-pointer"
           >
             Попробовать снова
           </button>
@@ -132,7 +133,7 @@ export function Home2() {
 
   return (
     <div className="">
-      <div className="animate-pulse absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vw] max-w-3xl h-[60vh] bg-linear-to-br from-green-500/30 via-yellow-500/5 to-orange-500/10 rounded-full filter blur-[120px] opacity-40"></div>
+      <div className="z-0 animate-pulse absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vw] max-w-3xl h-[60vh] bg-linear-to-br from-green-500/30 via-yellow-500/5 to-orange-500/10 rounded-full filter blur-[120px] opacity-40"></div>
 
       <main className="w-full max-w-5xl mx-auto z-10 p-4 sm:p-6 md:p-8">
         <div className="flex flex-col items-center justify-center min-h-[60vh]">
