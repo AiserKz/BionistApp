@@ -1,13 +1,6 @@
 def build_harvard_prompt(user_note: str = "") -> str:
-    """Формирует промпт, соответствующий принципам Harvard Healthy Eating Plate."""
-    # base = (
-    #     "Создай изображение, соответствующее принципам 'Гарвардской тарелки здорового питания': "
-    #     "половина тарелки — овощи и фрукты, четверть — цельнозерновые продукты, четверть — полезный белок (например, рыба, бобы, тофу). "
-    #     "Рядом стакан воды. Фон чистый, освещение яркое, стиль — реалистичная еда на белой тарелке. "
-    # )
     base = """
             Сгенерируй JSON строго по следующей структуре PlateData, и не добавляй лишнего текста!:
-
             {
                 "summary": string,
                 "totalCalories": number,
@@ -20,10 +13,29 @@ def build_harvard_prompt(user_note: str = "") -> str:
             }
 
             Где:
-            - Обязательно включи все поля: summary, totalCalories, plate (3 части), imageId, recommendation, ingredients. Ничего кроме JSON..
-            - нужно сгенерировать изображение, соответствующее принципам 'Гарвардской тарелки здорового питания':
-                
-            """
+            - Обязательно включи все поля: summary, totalCalories, plate (3 части), recommendation, ingredients. Ничего кроме JSON..
+        """
+
     if user_note.strip():
-        base += f"Если есть пользовательские пожелания, учти их: {user_note}"
+        base += f"Вот пользователский пожелание учти их обязательно! {user_note}"
+
     return base
+
+
+def build_harvard_image_prompt(plate_data: dict, user_note: str = "") -> str:
+    """
+    Формирует короткий промпт для генерации изображения блюда
+    на основе структуры PlateData, без инструкций.
+    """
+    plate_items = plate_data.get("plate", [])
+    plate_description = ", ".join(
+        f"{item['name']} ({', '.join(item['items'])})" for item in plate_items
+    )
+    ingredients = ", ".join(plate_data.get("ingredients", []))
+
+    prompt = f"Сделай изображение блюда с тарелкой: {plate_description}. Ингредиенты: {ingredients}. Реалистично, аппетитно."
+
+    if user_note.strip():
+        prompt += f" {user_note}"
+
+    return prompt

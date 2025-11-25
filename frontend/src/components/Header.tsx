@@ -13,7 +13,7 @@ export function Header() {
         <div className="w-11 h-10 ">
           <img src="/favicon3.png" className="select-none" draggable="false" />
         </div>
-        <span className="font-bold text-xl text-gray-200">Баланист</span>
+        <span className="font-bold text-xl text-gray-200">Балансит</span>
       </motion.div>
       <motion.button
         initial={{ opacity: 0, x: 50 }}

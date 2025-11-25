@@ -26,6 +26,18 @@ const COLORS: { [key: string]: string } = {
   "Злаки и крупы": "#f97316", // orange-500
   "Белковые продукты": "#3b82f6", // blue-500
 };
+
+const stringToColor = (str: string) => {
+  let hash = 0;
+
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+
+  const hue = Math.abs(hash) % 360;
+  return `hsl(${hue}, 70%, 50%)`;
+};
+
 const RADIAN = Math.PI / 180;
 
 // рендер лейбла
@@ -111,6 +123,10 @@ const PlateChart: React.FC<PlateChartProps> = ({ data, onReset }) => {
     },
   };
 
+  const getColor = (name: string) => {
+    return COLORS[name] || stringToColor(name);
+  };
+
   return (
     <motion.div
       className="w-full text-center flex flex-col items-center min-h-0"
@@ -137,7 +153,7 @@ const PlateChart: React.FC<PlateChartProps> = ({ data, onReset }) => {
         {/* Изображение */}
         <motion.div
           variants={itemVariants}
-          className="w-full max-w-md lg:w-1/2"
+          className="w-full max-w-md lg:w-1/2 p-2 rounded-2xl shadow-lg"
         >
           {isMobile ? (
             <img
@@ -179,7 +195,7 @@ const PlateChart: React.FC<PlateChartProps> = ({ data, onReset }) => {
                     stroke="none"
                   >
                     {chartData.map((entry, index) => (
-                      <Cell key={index} fill={COLORS[entry.name] || "#888"} />
+                      <Cell key={index} fill={getColor(entry.name) || "#888"} />
                     ))}
                   </Pie>
                   <Tooltip content={<CustomTooltip />} />
@@ -196,7 +212,7 @@ const PlateChart: React.FC<PlateChartProps> = ({ data, onReset }) => {
               <div key={item.name} className="flex items-center gap-2">
                 <span
                   className="w-3 h-3 rounded-full"
-                  style={{ backgroundColor: COLORS[item.name] }}
+                  style={{ backgroundColor: getColor(item.name) }}
                 ></span>
                 <span>{item.name}</span>
               </div>

@@ -102,7 +102,7 @@ export default function TiltedCard({
     >
       {showMobileWarning && (
         <div className="absolute top-4 text-center text-sm block sm:hidden">
-          This effect is not optimized for mobile. Check on desktop.
+          Этот эффект не работает на мобильных устройствах
         </div>
       )}
 

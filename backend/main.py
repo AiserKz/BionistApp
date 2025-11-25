@@ -1,6 +1,7 @@
 from flask import Flask, jsonify
 from flask_cors import CORS  # type: ignore
 from app.routes.food import app_food
+from app.core.config import GIGACHAT_CREDENTIALS
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -20,4 +21,6 @@ def health():
 
 
 if __name__ == "__main__":
+    if GIGACHAT_CREDENTIALS is None:
+        raise Exception("GIGACHAT_CREDENTIALS ключ не задан! проверте файл .env")
     app.run(debug=True)

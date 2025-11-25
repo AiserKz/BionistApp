@@ -20,7 +20,7 @@ def food_generate():
 
     prompt = build_harvard_prompt(user_note)
     try:
-        result = giga_service.generate(prompt, flask_url_for=url_for)
+        result = giga_service.generate_v2(prompt, flask_url_for=url_for)
         return jsonify(result), 200
     except Exception as e:
         print("Ошибка при генераций: ", e)
