@@ -14,6 +14,10 @@ def build_harvard_prompt(user_note: str = "") -> str:
 
             Где:
             - Обязательно включи все поля: summary, totalCalories, plate (3 части), recommendation, ingredients. Ничего кроме JSON..
+            - в summary напиши краткое описание тарелки
+            - в totalCalories напиши общее количество калорий
+            - в recommendation напиши рекомендацию
+            - в ingredients напиши ингредиенты, которые есть в тарелке
         """
 
     if user_note.strip():
