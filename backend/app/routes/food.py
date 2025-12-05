@@ -2,7 +2,11 @@ from flask import Blueprint
 from flask import request, jsonify, url_for
 from app.service.gigachat_service import GigaChatService
 from app.core.config import GIGACHAT_CREDENTIALS
-from app.service.promt_builder import build_harvard_prompt
+from app.service.promt_builder import (
+    build_harvard_prompt,
+    clean_user_input,
+    contains_bad_words,
+)
 import os
 
 app_food = Blueprint("food", __name__, url_prefix="/food")
@@ -17,6 +21,17 @@ def food_generate():
         return jsonify({"error": "Пустое запрос"}), 400
 
     user_note = data.get("user_text", "").strip()
+
+    if not user_note:
+        return jsonify({"error": "Пустая инструкция"}), 400
+
+    user_note = clean_user_input(user_note)
+
+    if not user_note:
+        return jsonify({"error": "Пустая инструкция"}), 400
+
+    if contains_bad_words(user_note):
+        return jsonify({"error": "Инструкция содержит запрещенные слова"}), 400
 
     prompt = build_harvard_prompt(user_note)
     try:

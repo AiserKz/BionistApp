@@ -15,7 +15,7 @@ class GigaChatService:
         os.makedirs(self.images_dir, exist_ok=True)
 
     # Формирование payload запроса
-    def build_payload(self, prompt, temperature=0.8, max_tokens=400):
+    def build_payload(self, prompt, temperature=0.8, max_tokens=600):
         return Chat(
             messages=[Messages(role=MessagesRole.USER, content=prompt)],
             temperature=temperature,
@@ -35,14 +35,32 @@ class GigaChatService:
     # Парсить json с ответа ИИ с помощью регулярных выражений
     @staticmethod
     def parsing_content(data) -> dict:
-        cleaned = re.sub(r"^```json\s*", "", data)
+        # Убираем блоки ```
+        cleaned = re.sub(r"^```(?:json)?\s*", "", data)
         cleaned = re.sub(r"```$", "", cleaned).strip()
+
+        # Если есть остатки HTML или тэгов
         if "/>" in cleaned:
             cleaned = cleaned.split("/>", 1)[-1].strip()
+
+        # Заменяем дроби 1/4, 1/2 и т.п. на десятичные
+        def fraction_to_float(match):
+            num, denom = match.group(1), match.group(2)
+            return str(float(num) / float(denom))
+
+        cleaned = re.sub(r"\b(\d+)\s*/\s*(\d+)\b", fraction_to_float, cleaned)
+
+        # Обрезаем все символы после последней закрывающей фигурной скобки
+        last_brace = cleaned.rfind("}")
+        if last_brace != -1:
+            cleaned = cleaned[: last_brace + 1]
+
+        # Попытка распарсить
         try:
             json_data = json.loads(cleaned)
         except json.JSONDecodeError as e:
             raise ValueError(f"Не удалось распарсить JSON: {cleaned}") from e
+
         return json_data
 
     # Парсит image_id из тега <img>

@@ -13,6 +13,12 @@ export interface PlateData {
   image_url: string;
   recommendation: string;
   ingredients: string[];
+  recipe: {
+    steps: string[];
+    quantities: { [key: string]: string };
+    additional: string[];
+  };
+  nutrients: { [key: string]: number };
 }
 
 export interface PlateDataTestType {

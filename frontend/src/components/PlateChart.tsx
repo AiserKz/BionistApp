@@ -1,10 +1,9 @@
-import React, { useState } from "react";
+import React from "react";
 
 import {
   PieChart,
   Pie,
   Cell,
-  ResponsiveContainer,
   Tooltip,
   type PieLabelRenderProps,
 } from "recharts";
@@ -14,6 +13,9 @@ import { motion, type Variants } from "framer-motion";
 import { useIsMobile } from "../hooks/useIsMobile";
 import TiltedCard from "./TiltedCard";
 import { BASE_URL } from "../service/appSerivce";
+import { SimpleResponsiveContainer } from "./ChartContainer";
+import RecipeCard from "./RecipeCard";
+import NutritionCard from "./NutritionCard";
 
 interface PlateChartProps {
   data: PlateData;
@@ -21,10 +23,9 @@ interface PlateChartProps {
 }
 
 const COLORS: { [key: string]: string } = {
-  "Зерновые и картофель": "#22c55e", // green-500
-  "Овощи и фрукты": "#ef4444", // red-500
-  "Злаки и крупы": "#f97316", // orange-500
-  "Белковые продукты": "#3b82f6", // blue-500
+  Овощи: "#22c55e", // green-500
+  Белок: "#F24D51", // red-500
+  Углеводы: "#f59e0b", // blue-500
 };
 
 const stringToColor = (str: string) => {
@@ -80,9 +81,17 @@ const renderCustomizedLabel = ({
 const CustomTooltip: React.FC<any> = ({ active, payload }) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
+    const color = COLORS[data.name] || stringToColor(data.name);
     return (
-      <div className="bg-white/80 p-4 rounded-lg shadow-lg border border-gray-200 backdrop-blur-sm text-left z-10">
-        <p className="font-bold text-gray-800">{data.name}</p>
+      <div className="bg-white/80 p-4 rounded-lg shadow-lg border border-gray-200 backdrop-blur-sm text-left">
+        <p
+          className="font-bold"
+          style={{
+            color,
+          }}
+        >
+          {data.name}
+        </p>
         <ul className="list-disc list-inside text-gray-600 mt-1">
           {data.items.map((item: string, index: number) => (
             <li key={index}>{item}</li>
@@ -95,10 +104,9 @@ const CustomTooltip: React.FC<any> = ({ active, payload }) => {
 };
 
 const PlateChart: React.FC<PlateChartProps> = ({ data, onReset }) => {
-  const chartData = data.plate;
+  const chartData = data.plate.filter((item) => item.items.length > 0);
 
   const isMobile = useIsMobile(768);
-  const [chartReady, setChartReady] = useState<boolean>(false);
 
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -134,7 +142,6 @@ const PlateChart: React.FC<PlateChartProps> = ({ data, onReset }) => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
-      onAnimationComplete={() => setChartReady(true)}
     >
       <motion.h2
         variants={itemVariants}
@@ -149,7 +156,7 @@ const PlateChart: React.FC<PlateChartProps> = ({ data, onReset }) => {
         </span>
       </motion.p>
 
-      <div className="w-full min-h-0 max-w-5xl flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-12">
+      <div className="w-full min-h-0 max-w-5xl flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-12 z-10">
         {/* Изображение */}
         <motion.div
           variants={itemVariants}
@@ -178,32 +185,37 @@ const PlateChart: React.FC<PlateChartProps> = ({ data, onReset }) => {
           variants={itemVariants}
           className="w-full max-w-md lg:w-1/2 flex flex-col items-center min-h-full"
         >
-          <div className="w-full h-80 sm:h-96 relative min-h-0">
-            {chartReady && (
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={chartData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={renderCustomizedLabel}
-                    outerRadius="90%"
-                    innerRadius="50%"
-                    dataKey="value"
-                    nameKey="name"
-                    stroke="none"
-                  >
-                    {chartData.map((entry, index) => (
-                      <Cell key={index} fill={getColor(entry.name) || "#888"} />
-                    ))}
-                  </Pie>
-                  <Tooltip content={<CustomTooltip />} />
-                </PieChart>
-              </ResponsiveContainer>
-            )}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none -z-10">
-              <span className="text-gray-400 text-sm">Ваша тарелка</span>
+          <div className="w-full h-90 relative flex items-center justify-center">
+            <SimpleResponsiveContainer className="w-full h-full">
+              <PieChart>
+                <Pie
+                  data={chartData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={renderCustomizedLabel}
+                  outerRadius="90%"
+                  innerRadius="50%"
+                  dataKey="value"
+                  nameKey="name"
+                  stroke="none"
+                >
+                  {chartData.map((entry, index) => (
+                    <Cell key={index} fill={getColor(entry.name) || "#888"} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  content={<CustomTooltip />}
+                  contentStyle={{ color: "red" }}
+                />
+              </PieChart>
+            </SimpleResponsiveContainer>
+
+            {/* Текст по центру */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <span className="text-gray-400 text-sm font-medium -z-10">
+                Ваша тарелка
+              </span>
             </div>
           </div>
 
@@ -242,7 +254,7 @@ const PlateChart: React.FC<PlateChartProps> = ({ data, onReset }) => {
             {data.ingredients.map((item, index) => (
               <li
                 key={index}
-                className="text-gray-400 text-sm flex items-start"
+                className="text-gray-400 text-md flex items-center"
               >
                 <span className="text-lime-400 mr-2 mt-1">&#8226;</span>
                 <span>{item}</span>
@@ -252,12 +264,29 @@ const PlateChart: React.FC<PlateChartProps> = ({ data, onReset }) => {
         </motion.div>
       </div>
 
+      {/* Рецепт и нутриенты (вынесены в отдельные компоненты) */}
+      <div className="w-full max-w-5xl mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <motion.div variants={itemVariants} className="">
+          <RecipeCard recipe={data.recipe} containerVariants={itemVariants} />
+        </motion.div>
+
+        <motion.div variants={itemVariants} className="">
+          <NutritionCard
+            totalCalories={data.totalCalories}
+            nutrients={data.nutrients}
+            ingredients={data.ingredients}
+          />
+        </motion.div>
+      </div>
+
       <motion.button
         variants={itemVariants}
         onClick={onReset}
-        className="mt-12 bg-lime-500/20 text-lime-300 font-bold py-3 px-8 rounded-full hover:bg-lime-500/40 transition-colors duration-300"
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className="mt-12 bg-lime-500/20 text-lime-300 font-bold py-3 px-8 cursor-pointer rounded-full hover:bg-lime-500/40 transition-colors duration-300"
       >
-        Сгенерировать новую
+        Сгенерировать другую тарелку
       </motion.button>
     </motion.div>
   );

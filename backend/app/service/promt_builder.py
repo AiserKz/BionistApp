@@ -1,27 +1,49 @@
 def build_harvard_prompt(user_note: str = "") -> str:
     base = """
-            Сгенерируй JSON строго по следующей структуре PlateData, и не добавляй лишнего текста!:
+            Сгенерируй строго JSON по следующей структуре PlateData. Никаких пояснений вне JSON. 
+            Строго соблюдай формат:
+
             {
                 "summary": string,
                 "totalCalories": number,
                 "plate": [
-                    {"name": string, "items": [string], "value": number},
-                    {"name": string, "items": [string], "value": number},
-                    {"name": string, "items": [string], "value": number}
-                "recommendation": sting,
-                "ingredients": [string]
+                    {"name": "Белок", "items": [string], "value": number},
+                    {"name": "Углеводы", "items": [string], "value": number},
+                    {"name": "Овощи", "items": [string], "value": number}
+                ],
+                "ingredients": [string],
+                "recipe": {
+                    "steps": [string],
+                    "quantities": {string: string},
+                    "additional": [string]
+                },
+                "nutrients": {
+                    "protein": number,
+                    "fat": number,
+                    "carbs": number,
+                    "fiber": number
+                },
+                "recommendation": string
             }
 
-            Где:
-            - Обязательно включи все поля: summary, totalCalories, plate (3 части), recommendation, ingredients. Ничего кроме JSON..
-            - в summary напиши краткое описание тарелки
-            - в totalCalories напиши общее количество калорий
-            - в recommendation напиши рекомендацию
-            - в ingredients напиши ингредиенты, которые есть в тарелке
+            Жёсткие правила:
+            1. В plate всегда ровно три категории: Белок, Углеводы, Овощи.
+            2. НИ ОДИН items НЕ ДОЛЖЕН БЫТЬ ПУСТЫМ. Если в категории нет подходящих продуктов — перераспредели ингредиенты корректно.
+            3. Пропорции: Белок 0.25, Углеводы 0.25, Овощи 0.5 (числа, а не дроби).
+            4. ingredients — перечисли все продукты, использованные в тарелке.
+            5. totalCalories — калории за 1 приём пищи.
+            6. recipe — шаги приготовления + граммовки. additional — только соусы/специи/заправки.
+            7. nutrients — белки, жиры, углеводы, клетчатка.
+            8. recommendation — рекомендации по рациону согласно принципам Гарвардской тарелки.
+            9. Строго JSON. Без ```json, без лишнего текста, без комментариев.
+
+            Если ингредиентов мало, распределяй разумно:
+            • если нет углеводов — используй овощи или нейтральный продукт как углеводы;
+            • если только один продукт — раздели его условно на 3 категории.
         """
 
     if user_note.strip():
-        base += f"Вот пользователский пожелание учти их обязательно! {user_note}"
+        base += f"\nИспользуй только следующие ингредиенты: {user_note}"
 
     return base
 
@@ -43,3 +65,22 @@ def build_harvard_image_prompt(plate_data: dict, user_note: str = "") -> str:
         prompt += f" {user_note}"
 
     return prompt
+
+
+# Функция для очистки пользовательского ввода от нежелательных символов
+def clean_user_input(text: str) -> str:
+    import re
+
+    cleaned = re.sub(r"[^а-яА-Яa-zA-Z,\-\s]", "", text)
+    cleaned = re.sub(r"\s+", " ", cleaned).strip()
+    cleaned = re.sub(r",+", ",", cleaned)
+    return cleaned
+
+
+def contains_bad_words(text: str, blacklist=None) -> bool:
+    if not blacklist:
+        from app.core.config import FOOD_BLACK_LIST
+
+        blacklist = FOOD_BLACK_LIST
+    text_lower = text.lower()
+    return any(word in text_lower for word in blacklist)
