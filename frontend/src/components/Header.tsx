@@ -1,5 +1,6 @@
 import { User2Icon } from "lucide-react";
 import { motion } from "motion/react";
+import { APP_TITLE } from "../service/appSerivce";
 
 export function Header() {
   return (
@@ -13,7 +14,7 @@ export function Header() {
         <div className="w-11 h-10 ">
           <img src="/favicon3.png" className="select-none" draggable="false" />
         </div>
-        <span className="font-bold text-xl text-gray-200">Балансит</span>
+        <span className="font-bold text-xl text-gray-200">{APP_TITLE}</span>
       </motion.div>
       <motion.button
         initial={{ opacity: 0, x: 50 }}

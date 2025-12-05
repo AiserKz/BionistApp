@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import { generateFood } from "../service/appSerivce";
+import { APP_TITLE, generateFood } from "../service/appSerivce";
 import type { PlateData } from "../types/types";
 import PlateChart from "../components/PlateChart";
 import Loader from "../components/Loader";
@@ -14,7 +14,7 @@ import HistoryContainer from "../components/HistoryContainter";
 const KEY_HISTORY = "wb_history";
 
 export function Home() {
-  useTitle("Баланист");
+  useTitle(APP_TITLE);
   const [userInput, setUserInput] = useState<string>("");
   const [plateData, setPlateData] = useState<PlateData | null>(null);
   const [plateHistory, setPlateHistory] = useState<PlateData[]>([]);
