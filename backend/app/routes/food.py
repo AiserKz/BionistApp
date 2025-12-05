@@ -8,10 +8,13 @@ from app.service.promt_builder import (
     contains_bad_words,
 )
 import os
+from app.service.log_service import PromptLogger
 
 app_food = Blueprint("food", __name__, url_prefix="/food")
 IMAGES_DIR = os.path.join("static", "images")
 giga_service = GigaChatService(GIGACHAT_CREDENTIALS, IMAGES_DIR)
+
+logger = PromptLogger()
 
 
 @app_food.route("/generate", methods=["POST"])
@@ -34,6 +37,12 @@ def food_generate():
         return jsonify({"error": "Инструкция содержит запрещенные слова"}), 400
 
     prompt = build_harvard_prompt(user_note)
+
+    logger.log(
+        user_note,
+        extra_info=f"IP: {request.remote_addr}, User-Agent: {request.user_agent.string[:50]}"
+    )
+
     try:
         result = giga_service.generate_v2(prompt, flask_url_for=url_for)
         return jsonify(result), 200
