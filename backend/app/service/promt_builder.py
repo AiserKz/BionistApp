@@ -59,7 +59,12 @@ def build_harvard_image_prompt(plate_data: dict, user_note: str = "") -> str:
     )
     ingredients = ", ".join(plate_data.get("ingredients", []))
 
-    prompt = f"Сделай изображение блюда с тарелкой: {plate_description}. Ингредиенты: {ingredients}. Реалистично, аппетитно."
+    prompt = f""" 
+        Сделай реалистичное изображение блюда на тарелке по принципу Harvard Plate: {plate_description}. 
+        Используй только эти ингредиенты: {ingredients}. Размести их аккуратно на тарелке. 
+        Фото высокого качества, крупный план, естественное освещение. 
+        Не добавляй никаких других ингредиентов!
+    """
 
     if user_note.strip():
         prompt += f" {user_note}"

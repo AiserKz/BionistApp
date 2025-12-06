@@ -1,4 +1,3 @@
-import os
 import datetime
 import threading
 from pathlib import Path
@@ -6,6 +5,7 @@ from typing import Literal
 import sys
 
 LogLevels = Literal["info", "warn", "error"]
+
 
 class PromptLogger:
     def __init__(self, logs_dir: str = "logs"):

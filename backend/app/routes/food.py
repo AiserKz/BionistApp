@@ -1,5 +1,4 @@
-from flask import Blueprint
-from flask import request, jsonify, url_for
+from flask import Blueprint, request, jsonify, url_for
 from app.service.gigachat_service import GigaChatService
 from app.core.config import GIGACHAT_CREDENTIALS
 from app.service.promt_builder import (
@@ -19,33 +18,41 @@ logger = PromptLogger()
 
 @app_food.route("/generate", methods=["POST"])
 def food_generate():
-    data = request.get_json()
+    try:
+        data = request.get_json(
+            force=True
+        )  # force=True на случай Content-Type != application/json
+    except Exception:
+        return jsonify({"error": "Невалидный JSON"}), 400
+
     if not data:
-        return jsonify({"error": "Пустое запрос"}), 400
+        return jsonify({"error": "Пустой запрос"}), 400
 
-    user_note = data.get("user_text", "").strip()
-
-    if not user_note:
+    user_note = data.get("user_text", "")
+    if not isinstance(user_note, str) or not user_note.strip():
         return jsonify({"error": "Пустая инструкция"}), 400
 
     user_note = clean_user_input(user_note)
-
     if not user_note:
-        return jsonify({"error": "Пустая инструкция"}), 400
+        return jsonify({"error": "Пустая инструкция после очистки"}), 400
 
     if contains_bad_words(user_note):
         return jsonify({"error": "Инструкция содержит запрещенные слова"}), 400
 
     prompt = build_harvard_prompt(user_note)
 
+    # Логируем запрос
     logger.log(
         user_note,
-        extra_info=f"IP: {request.remote_addr}, User-Agent: {request.user_agent.string[:50]}"
+        extra_info=f"IP: {request.remote_addr}, User-Agent: {str(request.user_agent)[:50]}",
     )
 
     try:
         result = giga_service.generate_v2(prompt, flask_url_for=url_for)
+        if not result:
+            return jsonify({"error": "Пустой результат от сервиса"}), 500
         return jsonify(result), 200
     except Exception as e:
-        print("Ошибка при генераций: ", e)
+        # Логируем ошибку для сервера
+        print("Ошибка при генерации:", e)
         return jsonify({"error": "Ошибка генерации", "details": str(e)}), 500

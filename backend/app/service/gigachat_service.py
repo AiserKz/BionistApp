@@ -5,7 +5,7 @@ from app.service.promt_builder import build_harvard_image_prompt
 
 
 class GigaChatService:
-    # Инициализация сервиса credentials - ключи, images_dir - папка для сохранения картинок, model - модель ИИ
+    # Инициализация сервиса
     def __init__(self, credentials, images_dir, model="GigaChat-2"):
         self.giga = GigaChat(
             credentials=credentials, verify_ssl_certs=False, timeout=60
@@ -27,83 +27,119 @@ class GigaChatService:
     # Отправка запроса в ИИ
     def chat(self, prompt):
         payload = self.build_payload(prompt)
-        response = self.giga.chat(payload)
-        if not response.choices or not response.choices[0].message.content:
-            return {"error": "Пустой ответ от модели"}
-        return response.choices[0].message.content
+        try:
+            response = self.giga.chat(payload)
+        except Exception as e:
+            return {"error": f"Ошибка запроса к GigaChat: {str(e)}"}
 
-    # Парсить json с ответа ИИ с помощью регулярных выражений
+        if not response or not hasattr(response, "choices") or not response.choices:
+            return {"error": "Пустой ответ от модели"}
+
+        content = response.choices[0].message.content
+        if not content:
+            return {"error": "Пустой контент от модели"}
+
+        return content
+
+    # Парсинг JSON из ответа ИИ
     @staticmethod
     def parsing_content(data) -> dict:
+        if not isinstance(data, str):
+            return {}
+
         # Убираем блоки ```
         cleaned = re.sub(r"^```(?:json)?\s*", "", data)
         cleaned = re.sub(r"```$", "", cleaned).strip()
 
-        # Если есть остатки HTML или тэгов
+        # Убираем HTML остатки
         if "/>" in cleaned:
             cleaned = cleaned.split("/>", 1)[-1].strip()
 
-        # Заменяем дроби 1/4, 1/2 и т.п. на десятичные
+        # Убираем комментарии вида // или /* */
+        cleaned = re.sub(r"//.*?$", "", cleaned, flags=re.MULTILINE)
+        cleaned = re.sub(r"/\*.*?\*/", "", cleaned, flags=re.DOTALL)
+
+        # Заменяем дроби 1/2, 1/4 на десятичные
         def fraction_to_float(match):
             num, denom = match.group(1), match.group(2)
             return str(float(num) / float(denom))
 
         cleaned = re.sub(r"\b(\d+)\s*/\s*(\d+)\b", fraction_to_float, cleaned)
 
-        # Обрезаем все символы после последней закрывающей фигурной скобки
+        # Обрезаем все символы после последней закрывающей скобки
         last_brace = cleaned.rfind("}")
         if last_brace != -1:
             cleaned = cleaned[: last_brace + 1]
 
-        # Попытка распарсить
         try:
             json_data = json.loads(cleaned)
-        except json.JSONDecodeError as e:
-            raise ValueError(f"Не удалось распарсить JSON: {cleaned}") from e
+        except json.JSONDecodeError:
+            json_data = {}
 
         return json_data
 
-    # Парсит image_id из тега <img>
+    # Получение image_id из тега <img>
     @staticmethod
     def get_image_id(data) -> str:
+        if not isinstance(data, str):
+            raise ValueError("Неверный формат данных для поиска image_id")
+
         img_match = re.search(r'<img\s+src="([^"]+)"', data)
         if img_match:
-            image_id = img_match.group(1)
-        else:
-            raise ValueError(f"Не найден image_id в <img> теге: {data}")
-        return image_id
+            return img_match.group(1)
+        raise ValueError(f"Не найден image_id в <img> теге: {data}")
 
-    # Сохранение изображения после получение в base64
+    # Получение изображения в байтах
     def get_image_bytes(self, image_id: str) -> bytes:
-        img_response = self.giga.get_image(image_id)
-        if not img_response.content:
+        try:
+            img_response = self.giga.get_image(image_id)
+        except Exception as e:
+            raise ValueError(f"Ошибка получения изображения: {str(e)}")
+
+        if not img_response or not getattr(img_response, "content", None):
             raise ValueError("Не удалось получить изображение")
         return base64.b64decode(img_response.content)
 
-    # Сохранение изображения в локальном репозиторий
+    # Сохранение изображения
     def save_image(self, img_bytes: bytes) -> str:
         filename = f"{uuid.uuid4().hex}.png"
         path_to_save = os.path.join(self.images_dir, filename)
-        with open(path_to_save, "wb") as f:
-            f.write(img_bytes)
+        try:
+            with open(path_to_save, "wb") as f:
+                f.write(img_bytes)
+        except Exception as e:
+            raise ValueError(f"Ошибка сохранения изображения: {str(e)}")
         return filename
 
-    # Новая версия генераций
-    def generate_v2(self, prompt: str, flask_url_for):
-        text = self.chat(prompt)
-        print(f"Получил в ответ от модели {text}")
-        data = self.parsing_content(text)
-        promt_image = build_harvard_image_prompt(data)
-        img_name = self.generate_image(promt_image)
-        data["image_url"] = flask_url_for(
-            "static", filename=f"images/{img_name}", _external=False
-        )
-        return data
+    # Генерация изображения (возврат имени файла)
+    def generate_image(self, prompt: str):
+        content = self.chat(prompt)
+        if isinstance(content, dict) and "error" in content:
+            raise ValueError(f"Ошибка генерации изображения: {content['error']}")
 
-    # Генерация изображения который вернут сразу путь к изображению
-    def generate_image(self, promt: str):
-        content = self.chat(promt)
+        print(f"Запрос на генерацию изображения: {content}")
         image_id = self.get_image_id(content)
         img_bytes = self.get_image_bytes(image_id)
+
         filename = self.save_image(img_bytes)
         return filename
+
+    # Новая версия генераций с обработкой ошибок
+    def generate_v2(self, prompt: str, flask_url_for):
+        try:
+            text = self.chat(prompt)
+            print(text)
+            if isinstance(text, dict) and "error" in text:
+                return text
+
+            data = self.parsing_content(text)
+            promt_image = build_harvard_image_prompt(data)
+
+            img_name = self.generate_image(promt_image)
+            data["image_url"] = flask_url_for(
+                "static", filename=f"images/{img_name}", _external=False
+            )
+            return data
+
+        except Exception as e:
+            return {"error": f"Ошибка генерации: {str(e)}"}

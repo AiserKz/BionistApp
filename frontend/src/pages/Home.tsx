@@ -32,7 +32,6 @@ export function Home() {
   const handleGenerate = useCallback(async () => {
     if (!userInput.trim()) {
       setErrorInput("Пожалуйста, укажите ваши предпочтения или калории.");
-      console.error("Пожалуйста, укажите ваши предпочтения или калории.");
       return;
     }
     setErrorInput(null);

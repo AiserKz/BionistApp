@@ -104,7 +104,7 @@ const CustomTooltip: React.FC<any> = ({ active, payload }) => {
 };
 
 const PlateChart: React.FC<PlateChartProps> = ({ data, onReset }) => {
-  const chartData = data.plate.filter((item) => item.items.length > 0);
+  const chartData = data.plate?.filter((item) => item.items.length > 0) || [];
 
   const isMobile = useIsMobile(768);
 
@@ -251,15 +251,16 @@ const PlateChart: React.FC<PlateChartProps> = ({ data, onReset }) => {
         >
           <h3 className="font-bold text-lg text-gray-200 mb-3">Ингредиенты</h3>
           <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
-            {data.ingredients.map((item, index) => (
-              <li
-                key={index}
-                className="text-gray-400 text-md flex items-center"
-              >
-                <span className="text-lime-400 mr-2 mt-1">&#8226;</span>
-                <span>{item}</span>
-              </li>
-            ))}
+            {data &&
+              data.ingredients?.map((item, index) => (
+                <li
+                  key={index}
+                  className="text-gray-400 text-md flex items-center"
+                >
+                  <span className="text-lime-400 mr-2 mt-1">&#8226;</span>
+                  <span>{item}</span>
+                </li>
+              ))}
           </ul>
         </motion.div>
       </div>
